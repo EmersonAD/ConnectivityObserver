@@ -21,5 +21,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         connectivityObserver = ConnectivityObserverImpl(applicationContext)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            connectivityObserver.observer().collect{ state ->
+                binding.teste.text = state.name
+            }
+        }
     }
 }

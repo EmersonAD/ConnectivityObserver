@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 class ConnectivityObserverImpl(
-    private val context: Context
+    context: Context
 ) : ConnectivityObserver {
 
     private val connectivityManager =
@@ -27,7 +27,7 @@ class ConnectivityObserverImpl(
                 }
 
                 override fun onLosing(network: Network, maxMsToLive: Int) {
-                    super.onLosing(network, maxMsToLive)
+                    super.onLosing(network, 3)
                     launch {
                         send(ConnectivityObserver.Status.Unavailable)
                     }
@@ -36,14 +36,14 @@ class ConnectivityObserverImpl(
                 override fun onLost(network: Network) {
                     super.onLost(network)
                     launch {
-                        send(ConnectivityObserver.Status.Losing)
+                        send(ConnectivityObserver.Status.Lost)
                     }
                 }
 
                 override fun onUnavailable() {
                     super.onUnavailable()
                     launch {
-                        send(ConnectivityObserver.Status.Lost)
+                        send(ConnectivityObserver.Status.Losing)
                     }
                 }
             }
