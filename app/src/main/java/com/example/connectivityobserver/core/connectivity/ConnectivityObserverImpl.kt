@@ -3,6 +3,10 @@ package com.example.connectivityobserver.core.connectivity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkCapabilities.*
+import com.example.connectivityobserver.core.connectivity.ConnectivityObserver.Status
+import com.example.connectivityobserver.core.connectivity.ConnectivityObserver.Status.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -16,34 +20,32 @@ class ConnectivityObserverImpl(
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-    override fun observer(): Flow<ConnectivityObserver.Status> {
+    override fun observer(): Flow<Status> {
         return callbackFlow {
             val callback = object : ConnectivityManager.NetworkCallback() {
-                override fun onAvailable(network: Network) {
-                    super.onAvailable(network)
-                    launch {
-                        send(ConnectivityObserver.Status.Available)
-                    }
-                }
 
-                override fun onLosing(network: Network, maxMsToLive: Int) {
-                    super.onLosing(network, 3)
+                override fun onCapabilitiesChanged(
+                    network: Network,
+                    networkCapabilities: NetworkCapabilities
+                ) {
+                    super.onCapabilitiesChanged(network, networkCapabilities)
                     launch {
-                        send(ConnectivityObserver.Status.Unavailable)
+                        networkCapabilities.run {
+                            if (hasCapability(NET_CAPABILITY_INTERNET) && hasCapability(NET_CAPABILITY_VALIDATED)) {
+                                send(InternetWithConnection)
+                            } else if (hasCapability(NET_CAPABILITY_INTERNET) && !hasCapability(NET_CAPABILITY_VALIDATED)){
+                                send(WithoutNetworkAccess)
+                            } else if (!hasCapability(NET_CAPABILITY_NOT_SUSPENDED)) {
+                                send(NetworkSuspended)
+                            }
+                        }
                     }
                 }
 
                 override fun onLost(network: Network) {
                     super.onLost(network)
                     launch {
-                        send(ConnectivityObserver.Status.Lost)
-                    }
-                }
-
-                override fun onUnavailable() {
-                    super.onUnavailable()
-                    launch {
-                        send(ConnectivityObserver.Status.Losing)
+                        send(LostConnection)
                     }
                 }
             }

@@ -1,4 +1,4 @@
-package com.example.connectivityobserver
+package com.example.connectivityobserver.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
