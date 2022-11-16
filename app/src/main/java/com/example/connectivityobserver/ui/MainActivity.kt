@@ -1,31 +1,20 @@
 package com.example.connectivityobserver.ui
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
-import com.example.connectivityobserver.core.connectivity.ConnectivityObserver
-import com.example.connectivityobserver.core.connectivity.ConnectivityObserverImpl
+import androidx.appcompat.app.AppCompatActivity
+import com.example.connectivityobserver.core.connectivity.ConnectivityWatcher
 import com.example.connectivityobserver.databinding.ActivityMainBinding
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import kotlin.coroutines.CoroutineContext
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var connectivityObserver: ConnectivityObserver
     private lateinit var binding: ActivityMainBinding
+    private lateinit var connectivityManager: ConnectivityWatcher
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        connectivityObserver = ConnectivityObserverImpl(applicationContext)
-
-        CoroutineScope(Dispatchers.Main).launch {
-            connectivityObserver.observer().collect{ state ->
-                binding.teste.text = state.name
-            }
-        }
+        connectivityManager = ConnectivityWatcher(this@MainActivity)
     }
 }
